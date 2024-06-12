@@ -1,0 +1,238 @@
+<?php
+include_once 'header.php';
+?>
+
+<a align="left" class="archive hide_when_print" href="itineraries_categories_archive.php" title="الارشيف" > <img src="../assets/icons/archive.png" /> </a>
+
+<?php
+include_once 'print_page_function.php';
+?>
+<img class="print-img hide_when_print" width='35px' onclick="print_page()" alt='طباعة' src='../assets/icons/print_icon.png' title="طباعة" >
+
+
+
+
+
+
+<div  class="title" >التحكم بفئات المسارات</div>
+<?php
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'delete') {
+    $iddel = intval($_GET['id']);
+    if ($iddel) {
+        //$select=  mysqli_query($connect, "SELECT logo FROM itineraries_categories WHERE id='$iddel'");
+        //$row=  mysqli_fetch_array($select);
+        //unlink("../../save_files/images/itinerarie-categories/".$row['logo']."");
+        $del = mysqli_query($connect, "UPDATE `itineraries_categories` SET is_canceled=1 WHERE id='$iddel'");
+        if ($del) {
+            ?>
+            <div class="ok">تم حذف الفئة بنجاح</div>
+            <meta http-equiv="refresh" content="1;url=itineraries_categories.php"/>
+            <?php
+            exit;
+        }
+    }
+}
+if (isset($_POST['edit']) && $_POST['edit'] == 'تعديل') {
+    if (!empty($_FILES['logo']['name'])) {
+        unlink("../../save_files/images/itinerarie-categories/".$_POST['oldlogo']."");
+		#---------------------------------------------------------------------------
+		include '../save_file-CLASS/file_upload.php';
+		$datafile=array();
+		$datafile['element_name']='logo';
+		$datafile['image_x']=200 ;
+		$datafile['image_y']=200 ;
+		$datafile['upload_folder_location']="../../save_files/images/itinerarie-categories/";
+		$logo_img_dst=img_resize_upload($datafile);
+		#---------------------------------------------------------------------------
+
+    } else {
+        $logo_img_dst = $_POST['oldlogo'];
+    }
+    $ids = $_POST['nameid'];
+    $name_var = $_POST['name_i'];
+    $description = $_POST['description'];
+
+
+    $update = mysqli_query($connect, "UPDATE `itineraries_categories` SET "
+            . "`name`='$name_var',`description`='$description', `logo`='$logo_img_dst' WHERE id='$ids'");
+           
+    if ($update) {
+        ?>
+        <div class="ok">تم تعديل الفئة بنجاح</div>
+        <meta http-equiv="refresh" content="1;url=<?php echo basename(__FILE__) ;?>"/>
+        <?php
+    } else {
+        echo 'cant';
+    }
+    exit;
+}
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit') {
+    $ide = intval($_GET['id']);
+    if ($ide) {
+        $query1 = mysqli_query($connect, "SELECT * FROM itineraries_categories WHERE id='$ide'");
+        $row1 = mysqli_fetch_array($query1);
+        $name = $row1['name'];
+
+
+        ?>
+        <form method="post" enctype="multipart/form-data">
+            <table class="table" width="60%">
+                <tr class="firstTR">
+                    <td colspan="2">التعديل على الفئة <span><?php echo $name ?></span></td>
+                </tr>
+                <tr>
+                    <td>اسم الفئة</td>
+                    <td><input type="text" name="name_i" value="<?php echo $name ?>" required="rquired"/></td>
+                </tr>
+                <tr>
+                    <td>شعار الفئة</td>
+                    <td>
+                        <input type="file" name="logo"/>
+                        <input type="hidden" value="<?php echo $row1['logo'] ?>" name="oldlogo"/>
+                        <img src="../../save_files/images/itinerarie-categories/<?php echo $row1['logo'] ?>" style="max-width: 100px"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>وصف الفئة</td>
+                    <td><input type="text" value="<?php echo $row1['description'] ?>" name="description"/></td>
+                </tr>
+
+                
+
+            
+                
+  
+                
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" name="edit" value="تعديل"/>
+                        <input type="hidden" name="nameid" value="<?php echo $ide ?>"/>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <?php
+    }
+    exit;
+}
+if (isset($_POST['addname']) && $_POST['addname'] == 'اضافة') {
+    
+    
+    #---------------------------------------------------------------------------
+    include '../save_file-CLASS/file_upload.php';
+	$datafile=array();
+	$datafile['element_name']='logo';
+	$datafile['image_x']=200 ;
+	$datafile['image_y']=200 ;
+	$datafile['upload_folder_location']="../../save_files/images/itinerarie-categories/";
+    $logo_img_dst=img_resize_upload($datafile);
+    #---------------------------------------------------------------------------
+    
+    $name_var = $_POST['name_i'];
+    $description = $_POST['description'];
+
+
+    $insert = mysqli_query($connect, "INSERT INTO itineraries_categories (name,logo,description) "
+            . "VALUES "
+            . "('$name_var','$logo_img_dst','$description')");
+    if ($insert) {
+        ?>
+        <div class="ok">تم اضافة الفئة بنجاح</div>
+        <meta http-equiv="refresh" content="1;url=<?php echo basename(__FILE__) ;?>"/>
+        <?php
+        exit;
+    }
+}
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'add_category') {
+    ?>
+    <form method="post" enctype="multipart/form-data">
+        <table class="table" width="60%">
+            <tr class="firstTR">
+                <td colspan="2">اضافة فئة جديده</td>
+            </tr>
+            <tr>
+                <td>اسم الفئة</td>
+                <td><input type="text" name="name_i" required="rquired"/></td>
+            </tr>
+            <tr>
+                <td>شعار الفئة</td>
+                <td><input type="file" name="logo"/></td>
+            </tr>
+            <tr>
+                <td>وصف الفئة</td>
+                <td><input type="text" name="description"/></td>
+            </tr>
+
+
+            
+            
+            
+            
+            
+            
+            <tr>
+                <td colspan="2"><input type="submit" name="addname" value="اضافة"/></td>
+            </tr>
+        </table>
+    </form>
+    <?php
+    exit;
+}
+?>
+<center>
+<a href="?action=add_category" >
+	<div align="right" class="add" style="float:right;color:white;font-size:1.1em;margin:10px;">
+
+		<img style="float:right;" width="30px" src="../assets/icons/new.png"/>
+		<span style="float:right;margin-right:10px;" >اضافة فئة </span>
+
+	</div>
+</a>
+
+</center>
+<table class="table" width="70%">
+    <tr class="firstTR">
+        <th></th>
+        <th>اسم الفئة</th>
+
+        <th>شعار الفئة</th>
+
+        <th>الوصف</th>
+        <th>تعديل</th>
+        <th>حذف</th>
+    </tr>
+    <?php
+    $query = mysqli_query($connect, "SELECT `id`, `name`, `logo`, `description` FROM `itineraries_categories`  WHERE 1 AND is_canceled=0  ORDER BY `name` ASC");
+    $row_number=0;
+    while ($row = mysqli_fetch_array($query)) {
+        $id = $row['id'];
+        $row_number=$row_number+1;
+
+		$img=$row['logo'];
+		$src="../../save_files/images/itinerarie-categories/$img";
+		if(!file_exists($src) || is_dir($src))//اذا الملف غير موجود او اصلا غير مخزن ملف فيكون هذا عبارة عن مسار مجلد وليس ملف
+		{
+			$src='../assets/image/empty.png';
+		}
+			
+		$element_image='<img style="max-width: 100px" src="'.$src.'" />';
+
+        
+        ?>
+        <tr>
+            <td><?php echo $row_number ?></td>
+            <td><?php echo $row['name'] ?></td>
+
+            
+            <td><?php echo $element_image; ?></td>
+
+            <td><?php echo $row['description'] ?></td>
+            <td><a href="?action=edit&id=<?php echo $id; ?>"><img width=25 src="../assets/icons/update.png" title="تعديل معلومات الفئة"/></a></td>
+            <td><a href="?action=delete&id=<?php echo $id; ?>"><img width=25 src="../assets/icons/delete.png" title="حذف الفئة" onclick="return confirm('هل تريد بالتأكيد حذف الفئة ؟')"/></a></td>
+        </tr>   
+    <?php }
+    ?>
+</table>
+<?php
+    include 'footer.php';
+?>

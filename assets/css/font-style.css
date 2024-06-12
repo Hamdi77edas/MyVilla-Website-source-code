@@ -1,0 +1,45 @@
+
+
+/*
+
+for new arabic or other language font from this site
+      
+https://fonts.google.com/?subset=arabic&selection.family=Tajawal
+
+*/
+
+
+
+
+
+/* this for arabic font Tajawal */
+
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: bold;
+  font-size:1.3em;
+  
+  src: local('Tajawal'), local('Tajawal-Regular'), url(../fonts_ar/arabic2/Iura6YBj_oCad4k1nzSBC45I.woff2) 	format('woff2');
+  unicode-range: U+0600-06FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE80-FEFC;
+}
+
+/* this for arabic font Helvetica */
+@font-face{
+  font-family:'Helvetica';
+  src:url(../fonts_ar/arabic1/HelveticaNeueW23forSKY-Reg.woff)
+}
+
+
+
+
+p,a,h1,h2,h3,h4,h5,h6,em,li,ul,div,span,select,input,label,table,button{
+
+    	/*font-family: 'Tajawal' ,'Poppins', sans-serif;*/ /*arabic font type2*/
+    	font-family: Arial,Helvetica ,'Poppins', sans-serif; /*arabic font type1*/
+
+}
+
+
+
+

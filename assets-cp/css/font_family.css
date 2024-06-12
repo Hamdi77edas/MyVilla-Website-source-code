@@ -1,0 +1,10 @@
+
+
+@font-face{
+	font-family:'Helvetica';src:url(../fonts/arabic/HelveticaNeueW23forSKY-Reg.woff);
+}
+
+
+p,a,h1,h2,h3,h4,h5,li,div,span,select,input,label,table,form{
+    font-family: Arial,Helvetica,sans-serif;
+}

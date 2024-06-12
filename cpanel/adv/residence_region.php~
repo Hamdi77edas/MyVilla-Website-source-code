@@ -1,0 +1,574 @@
+<?php
+include_once 'header.php';
+?>
+
+<a align="left" class="archive hide_when_print" href="itineraries_archive.php" title="الارشيف" > <img src="../assets/icons/archive.png" /> </a>
+
+<?php
+include_once 'print_page_function.php';
+?>
+<img class="print-img hide_when_print" width='35px' onclick="print_page()" alt='طباعة' src='../assets/icons/print_icon.png' title="طباعة" >
+
+
+
+
+
+<div class="title">التحكم بالمسارات</div>
+
+
+<?php
+//////////////////////////////delete
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'delete') {
+    $gidDel = intval($_GET['id']);
+    if ($gidDel) {
+        #$select=  mysqli_query($connect, "SELECT img FROM itineraries WHERE id='$gidDel'");
+        #$row=  mysqli_fetch_array($select);
+        #unlink("../../save_files/images/itineraries/".$row['img']."");
+        
+        $del = mysqli_query($connect, "UPDATE `itineraries` SET is_canceled=1 WHERE id='$gidDel'");
+        if ($del) {
+            ?>
+            <div class="ok">تم ارشفت المسار بنجاح</div>
+            <meta http-equiv="refresh" content="1;url=itineraries.php"/>
+            <?php
+            exit;
+        }
+    }
+}
+
+
+///////////////////////////////edit code
+if (isset($_POST['edititinerarie']) && $_POST['edititinerarie'] == 'تعديل المسار') {
+
+    if (!(empty($_FILES['itinerarieimg']['name']))) {
+
+        unlink("../../save_files/images/itineraries/".$_POST['olditinerarieimg']."");
+		#---------------------------------------------------------------------------
+		include '../save_file-CLASS/file_upload.php';
+		$datafile=array();
+		$datafile['element_name']='itinerarieimg';
+		$datafile['image_x']=200 ;
+		$datafile['image_y']=200 ;
+		$datafile['upload_folder_location']="../../save_files/images/itineraries/";
+		$itinerarie_img_dst=img_resize_upload($datafile);
+		#---------------------------------------------------------------------------
+		 
+    } else {
+        $itinerarie_img_dst = $_POST['olditinerarieimg'];
+    }
+
+    $catName = trim(addslashes(strip_tags($_POST['name'])));
+    $fee = floatval($_POST['fee']);
+    $price = floatval($_POST['price']);
+    $is_available = intval($_POST['is_available']);
+    $available_for = intval($_POST['available_for']);
+    $category_id = intval($_POST['category_id']);
+ 
+    $gide = $_POST['catId'];
+    $desc = $_POST['desc'];
+ 
+
+    $identification_number = $_POST['identification_number'];
+
+	$sql="UPDATE itineraries SET 
+			name='$catName',
+			fee='$fee',
+			price='$price',
+			category_id='$category_id',
+
+			is_available='$is_available',
+			available_for='$available_for',
+
+
+			img='$itinerarie_img_dst',
+			identification_number='$identification_number',
+			description='$desc' 
+			WHERE id='$gide' ";
+	//echo $sql;
+	
+    $update = mysqli_query($connect, $sql);
+
+	
+
+    if ($update) {
+        ?>
+        <div class="ok">تم تعديل المسار بنجاح</div>
+        <meta http-equiv="refresh" content="1;url=itineraries.php"/>
+        <?php
+        exit;
+    }
+}
+////////////////////////////edit form
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'edit') {
+    $gidEdit = intval($_GET['id']);
+    if ($gidEdit) {
+        $sql = mysqli_query($connect, "SELECT * FROM itineraries WHERE id='$gidEdit'");
+        $rowEdit = mysqli_fetch_array($sql);
+        $category_id = $rowEdit['category_id'];
+        
+        $is_available = $rowEdit['is_available'];
+        $available_for = $rowEdit['available_for'];
+
+        ?>
+        <form method="post" enctype="multipart/form-data">
+            <table dir="rtl" width="50%" class="table">
+                <tr class="firstTR">
+                    <td colspan="2">التعديل على المسار <?php echo stripslashes($rowEdit['name']); ?></td>
+                </tr>
+                <tr>
+                    <td>صوره المسار</td>
+                    <td>
+                        <input type="file" name="itinerarieimg"/>
+                        <div class="clear"></div>
+                        <img src="../../save_files/images/itineraries/<?php echo $rowEdit['img'] ?>"/>
+                        <input type="hidden" name="olditinerarieimg" value="<?php echo $rowEdit['img'] ?>"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>اسم المسار</td>
+                    <td><input type="text" name="name" required="required" value='<?php echo stripslashes($rowEdit['name']); ?>'/></td>
+                </tr>
+                <tr>
+                    <td>الفئة</td>
+                    <td>
+                        <select name="category_id" required="required">                            <?php
+                            $query0 = mysqli_query($connect, "SELECT `id`, `name` FROM `itineraries_categories` WHERE `id`=$category_id");
+                            $row0 = mysqli_fetch_array($query0);
+                            ?>
+                            <option value="<?php echo $row0['id'] ?>"><?php echo $row0['name'] ?></option>
+                            <?php
+                            $query1 = mysqli_query($connect, "SELECT `id`, `name` FROM `itineraries_categories` WHERE `id` !=$category_id");
+                            while ($row1 = mysqli_fetch_array($query1)) {
+                                ?>
+                                <option value="<?php echo $row1['id'] ?>"><?php echo $row1['name'] ?></option>
+                            <?php }
+                            ?>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+
+                </tr>
+                <tr>
+                    <td>تكلفة المسار</td>
+                    <td><input type="text" name="fee" required="required" value="<?php echo $rowEdit['fee']; ?>"/></td>
+                </tr>
+                
+                <tr>
+                    <td>سعر المسار</td>
+                    <td><input type="text" name="price" required="required" value="<?php echo $rowEdit['price']; ?>"/></td>
+                </tr>
+                
+                
+                <tr>
+                    <td>هل متاح؟</td>
+                    <td>
+						<select dir="rtl" style="text-align:right;width:50%;" name="is_available" >
+							<option></option>
+							<script>
+
+								CALL_MULTI_KEYS_VALUES(element_type='SELECTION-OPTION',"is_available",'هل متاح','../','',default_value=<?php echo "'$is_available'";?>);
+
+							</script>
+						</select>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>متاح الى</td>
+                    <td>
+						<select dir="rtl" style="text-align:right;width:50%;" name="available_for" >
+							<option></option>
+							<script>
+
+								CALL_MULTI_KEYS_VALUES(element_type='SELECTION-OPTION',"available_for",'متاح الى','../','',default_value=<?php echo "'$available_for'";?>);
+
+							</script>
+						</select>
+                    </td>
+                </tr>
+                
+                
+                <tr>
+                    <td>الوصف</td>
+                    <td><textarea name="desc"><?php echo $rowEdit['description'] ?></textarea></td>
+                </tr>
+                <tr>
+                    <td>رقم الباركود او التعريف</td>
+                    <td><input type="text" name="identification_number" value="<?php echo $rowEdit['identification_number'] ?>" /></td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <input type="submit" name="edititinerarie" value="تعديل المسار"/>
+                        <input type="hidden" name="catId" value="<?php echo $rowEdit['id']; ?>"/>
+                    </td>
+                </tr>
+            </table>
+        </form>
+        <?php
+        // }
+    }
+    exit;
+}
+///////////////////////add
+if (isset($_POST['add_itinerarie']) && $_POST['add_itinerarie'] == 'اضافة المسار') {
+
+	#---------------------------------------------------------------------------
+	include '../save_file-CLASS/file_upload.php';
+	$datafile=array();
+	$datafile['element_name']='itinerarieimg';
+	$datafile['image_x']=200 ;
+	$datafile['image_y']=200 ;
+	$datafile['upload_folder_location']="../../save_files/images/itineraries/";
+	$itinerarie_img_dst=img_resize_upload($datafile);
+	#---------------------------------------------------------------------------
+
+    $catName = trim(addslashes(strip_tags($_POST['name'])));
+    $fee = floatval($_POST['fee']);
+    $price = floatval($_POST['price']);
+    $is_available = intval($_POST['is_available']);
+    $available_for = intval($_POST['available_for']);
+    $category_id = intval($_POST['category_id']);
+ 
+
+ 
+    $identification_number = $_POST['identification_number'];
+    $desc = $_POST['desc'];
+    
+    if($identification_number)
+    {
+		$sql="SELECT id FROM `itineraries` WHERE 1 AND identification_number=$identification_number"; 
+		$query = mysqli_query($connect, $sql);
+		if( mysqli_num_rows($query)>0)
+		{
+		    ?>
+		    <div class="error">المسار مخزن مسبقا -- ربما موجود بالارشيف</div>
+		    <meta http-equiv="refresh" content="3;url=itineraries.php"/>
+		    <?php
+		    exit;
+		
+		
+		}
+	 }
+	 
+
+	 $insert_sql=	"INSERT INTO itineraries "
+            . "(name,fee,price,is_available,available_for,category_id,description,img,identification_number) "
+            . "VALUES "
+            . "('$catName','$fee','$price','$is_available','$available_for','$category_id','$desc','$itinerarie_img_dst','$identification_number')";
+
+	//echo  $insert_sql;
+
+    $insert1 = mysqli_query($connect, $insert_sql);
+       
+    if($insert1)
+    {
+		$last_itinerarie_id = mysqli_insert_id($connect);/////mean SELECT * FROM customer WHERE id = SCOPE_IDENTITY();      
+		$itinerarie_id=$row['id'];
+		$insert2 = mysqli_query($connect, "INSERT INTO itinerarie_inventory_amount (itinerarie_id,input_amount,output_amount) VALUES ('$last_itinerarie_id','0','0')");	
+	}
+	     
+       ?><script>
+       //alert(<?php echo '"'.$insert_sql.'"'; ?>);   
+       </script> <?php    
+    
+    if ($insert2) {
+        ?>
+        <div class="ok">تم اضافة المسار بنجاح</div>
+        <meta http-equiv="refresh" content="1;url=itineraries.php"/>
+        <?php
+        exit;
+    }
+}
+if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'add_itinerarie') {
+    ?>
+    <form method="post" enctype="multipart/form-data">
+        <table dir="rtl" width="50%" class="table">
+            <tr class="firstTR">
+                <td colspan="2">اضافة مسار</td>
+            </tr>
+            <tr>
+                <td>اسم المسار</td>
+                <td><input type="text" name="name" required="required"/></td>
+            </tr>
+            <tr>
+                <td>صوره للمسار</td>
+                <td><input type="file" name="itinerarieimg"/></td>
+            </tr>
+            <tr>
+                <td>الفئة</td>
+                <td>
+                    <select name="category_id" required="required">
+                        <option value="">الرجاء إختيار الفئة</option>
+                        <?php
+                        $query1 = mysqli_query($connect, "SELECT `id`, `name` FROM `itineraries_categories` WHERE is_canceled=0 ORDER BY `id` DESC");
+                        while ($row1 = mysqli_fetch_array($query1)) {
+                            ?>
+                            <option value="<?php echo $row1['id'] ?>"><?php echo $row1['name'] ?></option>
+                        <?php }
+                        ?>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+
+            </tr>
+            <tr>
+                <td>التكلفة</td>
+                <td><input type="text" name="fee" value="0" required="required"/></td>
+            </tr>
+            <tr>
+                <td>السعر</td>
+                <td><input type="text" name="price" value="0" required="required"/></td>
+            </tr>
+                <tr>
+                    <td>هل متاح؟</td>
+                    <td>
+						<select dir="rtl" style="text-align:right;width:50%;" name="is_available" >
+							<option></option>
+							<script>
+
+								CALL_MULTI_KEYS_VALUES(element_type='SELECTION-OPTION',"is_available",'هل متاح','../','',default_value=<?php echo "'1'";?>);
+
+							</script>
+						</select>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td>متاح الى</td>
+                    <td>
+						<select dir="rtl" style="text-align:right;width:50%;" name="available_for" >
+							<option></option>
+							<script>
+
+								CALL_MULTI_KEYS_VALUES(element_type='SELECTION-OPTION',"available_for",'متاح الى','../','',default_value=<?php echo "'1'";?>);
+
+							</script>
+						</select>
+                    </td>
+                </tr>
+            <tr>
+                <td>رقم الباركود او التعريف</td>
+                <td><input type="text" name="identification_number" /></td>
+            </tr>
+            <tr>
+                <td>الوصف</td>
+                <td><textarea name="desc"></textarea></td>
+            </tr>
+            <tr>
+                <td colspan="2"><input type="submit" name="add_itinerarie" value="اضافة المسار"/></td>
+            </tr>
+        </table>
+    </form>
+    <?php
+    exit;
+}
+
+
+
+
+
+
+
+
+
+
+
+$itinerarie_category_id="";
+$search_itinerarie_id="";
+$search_itinerarie_name="";
+
+
+if(isset($_GET['itinerarie_category_id'])) $itinerarie_category_id = $_GET['itinerarie_category_id'];
+if(isset($_GET['search_itinerarie_id'])) $search_itinerarie_id = $_GET['search_itinerarie_id'];
+if(isset($_GET['search_itinerarie_name'])) $search_itinerarie_name = $_GET['search_itinerarie_name'];
+
+
+
+
+if (!(empty($itinerarie_category_id))) {
+    $where_itinerarie_category_id = " AND itineraries.category_id ='$itinerarie_category_id'";
+} 
+
+if (!(empty($search_itinerarie_id))) {
+    $where_search_itinerarie_id = " AND itineraries.id ='$search_itinerarie_id' ";
+
+
+} 
+
+
+
+
+
+
+################################ form control search #############################################
+$parameter_search_form='search_itinerarie';
+$name_submit_search='showResult_search_itinerarie';
+$value_submit_search='إظهار';
+require 'cp_search.php';
+##################################################################################################
+	
+?>
+<center>
+<a href="?action=add_itinerarie" >
+	<div align="right" class="add" style="float:right;color:white;font-size:1.1em;margin:10px;">
+
+		<img style="float:right;" width="30px" src="../assets/icons/new.png"/>
+		<span style="float:right;margin-right:10px;" >اضافة مسار</span>
+
+	</div>
+</a>
+
+</center>
+<table class="table" width="100%" style="border:1px dashed blue">
+    <tr class="firstTR">
+        <th width="3%"></th>
+        <th></th>
+        
+        <th>اسم المسار</th>
+        <th>رقم التعريف الباركود</th>
+        <th>الفئة</th>
+        <th>هل متاح</th>
+        <th>متاح الى</th>
+ 
+        <th>التكلفة</th>
+        <th>السعر</th>
+
+        <th width="5%">تعديل</th>
+        <th width="5%">حذف</th>
+ 
+    </tr>
+    <?php
+    
+
+    	############################################################################################
+    	$sql="SELECT * FROM `multi_keys_values` WHERE 1 AND name='هل متاح'";
+    	$query = mysqli_query($connect, $sql);
+    	$is_available_dict = json_decode("{".mysqli_fetch_array($query)['keys_values']."}", true);
+
+    	$sql="SELECT * FROM `multi_keys_values` WHERE 1 AND name='متاح الى'";
+    	$query = mysqli_query($connect, $sql);
+    	$available_for_dict = json_decode("{".mysqli_fetch_array($query)['keys_values']."}", true);
+     	############################################################################################
+    
+    
+		$sql = "SELECT itineraries.id,itineraries.available_for,itineraries.is_available,itineraries.name,itineraries.category_id,itineraries.fee,itineraries.price,itineraries.img,itineraries.identification_number,itineraries_categories.name FROM itineraries LEFT JOIN itineraries_categories ON itineraries.category_id=itineraries_categories.id WHERE 1  $where_itinerarie_category_id  $where_search_itinerarie_id  and itineraries.is_canceled=0 AND itineraries_categories.is_canceled=0 ORDER BY itineraries.category_id,itineraries.id DESC";
+
+
+
+		//echo $sql;
+
+		$rows_per_page = 30;
+    
+        if (isset($_GET['page'])) {
+            $currentPage = $_GET['page'];
+        } else {
+            $currentPage = 1;
+        }
+
+        $prevPage = $currentPage - 1;
+        $nextPage = $currentPage + 1;
+        $perPage = $rows_per_page;
+        $start = ($currentPage - 1) * $perPage;
+
+        $totalRows = mysqli_num_rows(mysqli_query($connect, $sql));
+        if ($totalRows > 0) {
+            $lastPage = ceil($totalRows / $perPage);
+
+            if ((@$_GET['page']) > $lastPage) {
+                die("<div id='error'>لقد طلبت صفحة خاطئة</div>");
+            }
+           
+    
+    ########################################################################################################################
+    
+    
+    
+    
+    $sql = $sql." LIMIT $start,$perPage";##
+            
+
+
+ 
+    $query = mysqli_query($connect, $sql);
+    $row_number=$perPage*($currentPage-1);
+    while ($row = mysqli_fetch_array($query)) {
+        $id = $row['id'];
+        $row_number=$row_number+1;
+
+        
+		$img=$row['img'];
+		$src="../../save_files/images/itineraries/$img";
+		if(!file_exists($src) || is_dir($src))//اذا الملف غير موجود او اصلا غير مخزن ملف فيكون هذا عبارة عن مسار مجلد وليس ملف
+		{
+			$src='../assets/image/empty.png';
+		}
+			
+		$element_image='<img style="max-width: 100px" src="'.$src.'" />';
+
+        ?>
+        <tr>
+            <td><?php echo $row_number; ?></td>
+            <td><?php echo $element_image; ?></td>
+            <td><span style="color:blue"><?php echo stripslashes($row['name']); ?></span></td>
+            <td><span style="color:blue"><?php echo stripslashes($row['identification_number']); ?></span></td>
+            <td><span style="color:red"><?php echo $row['name']; ?></span></td>
+ 
+			<td><?php echo $is_available_dict[$row['is_available']]; ?></td>
+			<td><?php echo $available_for_dict[$row['available_for']]; ?></td>
+
+            <td><?php echo $row['fee']; ?></td>
+            <td><?php echo $row['price']; ?></td>
+ 
+            <td><a href="?action=edit&id=<?php echo $id; ?>"><img width=25 src="../assets/icons/update.png" title="تعديل معلومات المسار"/></a></td>
+            <td><a href="?action=delete&id=<?php echo $id; ?>"><img width=25 src="../assets/icons/delete.png" title="حذف المسار" onclick="return confirm('هل تريد بالتأكيد حذف السجل ')"/></a></td>
+
+        </tr>
+    <?php 
+    }
+    
+    }
+    
+     ?>
+</table>
+
+<?php
+
+    
+$pass_data_search_by_get="";    
+    
+
+
+echo '<div class="clear"></div><br/><center><div id="pagination">';
+echo "<a class='pagers'>" . $currentPage . "|" . $lastPage . "</a>";
+//echo "<br/>".$currentPage;
+//////////////////////pervious
+if ($currentPage == 1) {
+    echo'';
+} else {
+    echo "<a class='pager' href='?page=1'$pass_data_search_by_get>  الأولى </a>";
+    echo "<a class ='pager' href='?page=" . $prevPage . "$pass_data_search_by_get'>السابق</a>";
+}
+//////////////////////for loop for show numbers
+for ($i = $currentPage - 3; $i <= $currentPage + 5; $i++) {
+    if ($i > 0 && $i <= $lastPage) {
+        if ($currentPage != $i) {
+            echo"<a class='pager pagin' href='?page=" . $i . "$pass_data_search_by_get'>" . $i . "</a>";
+        } else {
+            echo"<a class='pagers'>" . $i . "</a>";
+        }
+    }
+}
+////////////////////////////////next
+if ($currentPage == $lastPage) {
+    echo'';
+} else {
+    echo"<a class ='pager pagin' href='?page=" . $nextPage . "$pass_data_search_by_get'>التالي</a>";
+    echo "<a class='pager pagin' href='?page=" . $lastPage . "$pass_data_search_by_get'>الأخيرة</a>";
+}
+echo"</div></center>";
+?>
+<?php
+include_once 'footer.php';
+?>

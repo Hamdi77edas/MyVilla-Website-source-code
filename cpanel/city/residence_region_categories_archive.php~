@@ -1,0 +1,94 @@
+<?php
+include_once 'header.php';
+?>
+<div  class="title" style="background-color:#8E0000 !important;" >ارشيف فئات المسارات</div>
+
+
+<script>
+	$("body").css("background-color", "#FFF5F5");
+</script>
+
+
+
+
+<script>
+
+
+
+
+
+function restore(id)
+{
+
+	var pass_data={
+		'function':'restore-itinerarie-category',
+		'id':id,
+	}
+	pass_data=JSON.stringify(pass_data);
+	//alert(pass_data);
+
+	$.ajax({
+	url:'ajax_for_itineraries_functions.php?pass_data='+pass_data,
+	success: function(data) {
+			//
+	}});
+	
+
+	location.reload();
+
+
+
+}
+
+</script>
+
+
+
+
+<table class="table" width="70%">
+    <tr class="firstTR">
+        <th></th>
+        <th>اسم الفئة</th>
+
+        <th>شعار الفئة</th>
+
+        <th>الوصف</th>
+
+        <th>استعادة</th>
+    </tr>
+    <?php
+    $query = mysqli_query($connect, "SELECT `id`, `name`, `logo`, `description` FROM `itineraries_categories` WHERE 1 AND is_canceled=1 ORDER BY `name` ASC");
+    $row_number=0;
+    while ($row = mysqli_fetch_array($query)) {
+        $id = $row['id'];
+        $row_number=$row_number+1;
+
+		$img=$row['logo'];
+		$src="../../save_files/images/itinerarie-categories/$img";
+		if(!file_exists($src) || is_dir($src))//اذا الملف غير موجود او اصلا غير مخزن ملف فيكون هذا عبارة عن مسار مجلد وليس ملف
+		{
+			$src='../assets/image/empty.png';
+		}
+			
+		$element_image='<img style="max-width: 100px" src="'.$src.'" />';
+
+
+
+        ?>
+        <tr>
+            <td><?php echo $row_number ?></td>
+            <td><?php echo $row['name'] ?></td>
+
+            
+            <td><?php echo $element_image; ?></td>
+
+            <td><?php echo $row['description'] ?></td>
+            <td><img width=25 src="../assets/icons/restore.png" onclick="restore('<?php echo $id?>')" title="استعادة"/></td>
+          
+        </tr>   
+    <?php }
+    ?>
+</table>
+<?php
+    include 'footer.php';
+?>

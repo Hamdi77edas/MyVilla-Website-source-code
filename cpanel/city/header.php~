@@ -1,0 +1,26 @@
+<?php
+include '../sessions.php';
+include '../class2/view/view.php';
+$date = date("Y-m-d");
+header('Content-Type: text/html; charset=utf-8');
+?>
+<html>
+    <head>
+    <meta charset="UTF-8"/>
+        <title></title>
+        <link rel='stylesheet' type='text/css' href='../assets/css/style.css'/>
+        <link rel='stylesheet' type='text/css' href='../assets/css/search_select_list.css'/>
+        <link rel='stylesheet' type='text/css' href='../assets/css/select_elements.css'/>
+        <link rel='stylesheet' type='text/css' href='../assets/css/custom_style.css'/>
+        
+                
+        <link rel='stylesheet' type='text/css' href='../assets/css/jquery-ui.min.css'/>
+
+        <script src="../assets/js/jquery-1.9.1.min.js"></script>
+		<script src="../assets/js/jquery-ui.js"></script>
+		<script src="../assets/js/myCode.js"></script>
+		<script type="text/javascript" src="../assets/js/jquery-1.9.1.min.js"></script>
+		
+    </head>
+    <body style="background-color:#F8F8FF;">
+    

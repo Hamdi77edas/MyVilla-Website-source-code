@@ -1,0 +1,99 @@
+
+
+
+
+<?php 
+
+$chdir='../';
+require "$chdir"."class1/view/search_select_list.php";
+
+?>
+
+
+
+<script>
+$(document).ready(function(){
+	$("#div_show_select_list_all_itinerarie_names").hide();
+});
+
+
+$(document).click(function(){
+	if($("#search_itinerarie_name").val()=='')
+	{
+		list_option_selected_all_itinerarie_names('','');
+	}
+});
+
+
+function list_option_selected_all_itinerarie_names(option_key,option_value)//this call and from element created by ajax code
+{
+	$("#div_show_select_list_all_itinerarie_names").hide();
+	$("#search_itinerarie_name").val(option_value);
+	$("#search_itinerarie_id").val(option_key);
+
+	//alert(option_value);
+
+}
+
+function call_search_function_searchitinerarie()
+{
+
+
+
+	var data_view_select_list={image_column:'itinerarie_id',title_column:'itinerarie_name',info_column:'itinerarie_identification'};
+
+	var element_id_and_function={input_search_id:'search_itinerarie_name',
+					div_show_list_id:'div_show_select_list_all_itinerarie_names',
+					function_name_onclick_option_selected:'list_option_selected_all_itinerarie_names',
+					put_option_value_column:'itinerarie_name',
+					put_option_key_column:'itinerarie_id'
+					};
+
+	var input_search_value=$('#search_itinerarie_name').val();
+	//input_search_value=input_search_value.split(" ")[0];//omar:search first word
+
+	
+	var sql=' SELECT itineraries.name as itinerarie_name,itineraries.identification_number as itinerarie_identification,itineraries.id as itinerarie_id FROM itineraries LEFT JOIN itineraries_categories ON itineraries_categories.id=itineraries.category_id WHERE (itineraries.is_canceled=0 AND itineraries_categories.is_canceled=0 and  (itineraries.name LIKE "|||||'+input_search_value+'|||||" OR itineraries.identification_number LIKE "|||||'+input_search_value+'|||||" ) )  LIMIT 0,5 ';
+	
+	
+	//alert(sql);
+	
+	__SEARCH_SELECT_LIST__(sql,data_view_select_list,element_id_and_function);
+			
+
+
+
+}
+
+
+
+
+
+
+</script>
+
+
+
+
+
+<div align="right" class="select_list_with_input" >
+
+	<input type="text" id="search_itinerarie_name" name="search_itinerarie_name" class="select_list" style="z-index:10;" onkeyup="call_search_function_searchitinerarie()" placeholder=" البحث عن مسار" autocomplete="off" 
+	value="<?php if(isset($GLOBALS['search_itinerarie_name'])) echo $GLOBALS['search_itinerarie_name'];?>" >
+	
+		<input type="hidden" id="search_itinerarie_id" name="search_itinerarie_id" value="<?php if(isset($GLOBALS['search_itinerarie_id'])) echo $GLOBALS['search_itinerarie_id'];?>" >
+		
+	<br>
+	<div id="div_show_select_list_all_itinerarie_names" class="select_list" align="right" style="z-index:10;" >
+	</div>
+
+</div>
+
+
+
+
+
+
+
+
+

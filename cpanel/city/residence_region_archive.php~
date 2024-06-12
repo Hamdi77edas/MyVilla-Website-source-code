@@ -1,0 +1,257 @@
+<?php
+include_once 'header.php';
+?>
+
+
+<div class="title" style="background-color:#8E0000 !important;" >ارشيف المسارات</div>
+
+<script>
+	$("body").css("background-color", "#FFF5F5");
+</script>
+
+
+
+
+<script>
+
+function restore(id)
+{
+
+	var pass_data={
+		'function':'restore-itinerarie',
+		'id':id,
+	}
+	pass_data=JSON.stringify(pass_data);
+	//alert(pass_data);
+
+	$.ajax({
+	url:'ajax_for_itineraries_functions.php?pass_data='+pass_data,
+	success: function(data) {
+			//
+	}});
+	
+
+	location.reload();
+
+
+
+}
+
+</script>
+
+<?php
+
+
+
+
+$itinerarie_category_id="";
+$search_itinerarie_id="";
+$search_itinerarie_name="";
+
+
+if(isset($_GET['itinerarie_category_id'])) $itinerarie_category_id = $_GET['itinerarie_category_id'];
+if(isset($_GET['search_itinerarie_id'])) $search_itinerarie_id = $_GET['search_itinerarie_id'];
+if(isset($_GET['search_itinerarie_name'])) $search_itinerarie_name = $_GET['search_itinerarie_name'];
+
+
+
+
+if (!(empty($itinerarie_category_id))) {
+    $where_itinerarie_category_id = " AND itineraries.category_id ='$itinerarie_category_id'";
+} 
+
+if (!(empty($search_itinerarie_id))) {
+    $where_search_itinerarie_id = " AND itineraries.id ='$search_itinerarie_id' ";
+
+
+} 
+
+
+
+
+
+
+################################ form control search #############################################
+$parameter_search_form='search_itinerarie_archive';
+$name_submit_search='showResult_search_itinerarie_archive';
+$value_submit_search='إظهار';
+require 'cp_search.php';
+##################################################################################################
+
+
+
+
+	
+?>
+
+<table class="table" width="100%" style="border:1px dashed blue">
+    <tr class="firstTR">
+        <th width="3%"></th>
+        <th></th>
+        
+        <th>اسم المسار</th>
+        <th>رقم التعريف الباركود</th>
+        <th>الفئة</th>
+        <th>هل متاح</th>
+        <th>متاح الى</th>
+ 
+        <th>التكلفة</th>
+        <th>السعر</th>
+
+
+        <th width="5%">استعادة</th>
+ 
+    </tr>
+    <?php
+    
+
+    	############################################################################################
+    	$sql="SELECT * FROM `multi_keys_values` WHERE 1 AND name='هل متاح'";
+    	$query = mysqli_query($connect, $sql);
+    	$is_available_dict = json_decode("{".mysqli_fetch_array($query)['keys_values']."}", true);
+
+    	$sql="SELECT * FROM `multi_keys_values` WHERE 1 AND name='متاح الى'";
+    	$query = mysqli_query($connect, $sql);
+    	$available_for_dict = json_decode("{".mysqli_fetch_array($query)['keys_values']."}", true);
+     	############################################################################################
+    
+    
+		$sql = "SELECT itineraries.id,itineraries.available_for,itineraries.is_available,itineraries.name,itineraries.category_id,itineraries.fee,itineraries.price,itineraries.img,itineraries.identification_number,itineraries_categories.name FROM itineraries LEFT JOIN itineraries_categories ON itineraries.category_id=itineraries_categories.id WHERE 1  $where_itinerarie_category_id  $where_search_itinerarie_id  and itineraries.is_canceled=1  AND itineraries_categories.is_canceled=0  ORDER BY itineraries.category_id,itineraries.id DESC";
+
+
+
+		
+
+		$rows_per_page = 30;
+    
+        if (isset($_GET['page'])) {
+            $currentPage = $_GET['page'];
+        } else {
+            $currentPage = 1;
+        }
+
+        $prevPage = $currentPage - 1;
+        $nextPage = $currentPage + 1;
+        $perPage = $rows_per_page;
+        $start = ($currentPage - 1) * $perPage;
+
+        $totalRows = mysqli_num_rows(mysqli_query($connect, $sql));
+        if ($totalRows > 0) {
+            $lastPage = ceil($totalRows / $perPage);
+
+            if ((@$_GET['page']) > $lastPage) {
+                die("<div id='error'>لقد طلبت صفحة خاطئة</div>");
+            }
+           
+    
+    ########################################################################################################################
+    
+    
+    
+    
+    $sql = $sql." LIMIT $start,$perPage";##
+            
+
+	//echo $sql;
+ 
+    $query = mysqli_query($connect, $sql);
+    $row_number=$perPage*($currentPage-1);
+    while ($row = mysqli_fetch_array($query)) {
+        $id = $row['id'];
+        $row_number=$row_number+1;
+        
+		$img=$row['img'];
+		$src="../../save_files/images/itineraries/$img";
+		if(!file_exists($src) || is_dir($src))//اذا الملف غير موجود او اصلا غير مخزن ملف فيكون هذا عبارة عن مسار مجلد وليس ملف
+		{
+			$src='../assets/image/empty.png';
+		}
+			
+		$element_image='<img style="max-width: 100px" src="'.$src.'" />';
+
+        
+        
+
+        ?>
+        <tr>
+            <td><?php echo $row_number; ?></td>
+            <td><?php echo $element_image; ?></td>
+            <td><span style="color:blue"><?php echo stripslashes($row['name']); ?></span></td>
+            <td><span style="color:blue"><?php echo stripslashes($row['identification_number']); ?></span></td>
+            <td><span style="color:red"><?php echo $row['name']; ?></span></td>
+ 
+			<td><?php echo $is_available_dict[$row['is_available']]; ?></td>
+			<td><?php echo $available_for_dict[$row['available_for']]; ?></td>
+
+            <td><?php echo $row['fee']; ?></td>
+            <td><?php echo $row['price']; ?></td>
+ 
+
+            <td><img width=25 src="../assets/icons/restore.png" title="استعادة المسار" onclick="restore('<?php echo $id?>')"/></td>
+
+        </tr>
+    <?php 
+    }
+    
+    }
+    
+     ?>
+</table>
+
+<?php
+
+    
+$pass_data_search_by_get="&itinerarie_category_id=$itinerarie_category_id&search_itinerarie_id=$search_itinerarie_id";    
+    
+
+
+echo '<div class="clear"></div><br/><center><div id="pagination">';
+echo "<a class='pagers'>" . $currentPage . "|" . $lastPage . "</a>";
+//echo "<br/>".$currentPage;
+//////////////////////pervious
+if ($currentPage == 1) {
+    echo'';
+} else {
+    echo "<a class='pager' href='?page=1'$pass_data_search_by_get>  الأولى </a>";
+    echo "<a class ='pager' href='?page=" . $prevPage . "$pass_data_search_by_get'>السابق</a>";
+}
+//////////////////////for loop for show numbers
+for ($i = $currentPage - 3; $i <= $currentPage + 5; $i++) {
+    if ($i > 0 && $i <= $lastPage) {
+        if ($currentPage != $i) {
+            echo"<a class='pager pagin' href='?page=" . $i . "$pass_data_search_by_get'>" . $i . "</a>";
+        } else {
+            echo"<a class='pagers'>" . $i . "</a>";
+        }
+    }
+}
+////////////////////////////////next
+if ($currentPage == $lastPage) {
+    echo'';
+} else {
+    echo"<a class ='pager pagin' href='?page=" . $nextPage . "$pass_data_search_by_get'>التالي</a>";
+    echo "<a class='pager pagin' href='?page=" . $lastPage . "$pass_data_search_by_get'>الأخيرة</a>";
+}
+echo"</div></center>";
+?>
+<?php
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+include_once 'footer.php';
+?>
